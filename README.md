@@ -1,6 +1,6 @@
 # dologen
 
-A small cli tool to generate a Docker `config.json` with registry credentials. Ideal for Kubernetes secrets.
+A small CLI tool to generate a Docker `config.json` with registry credentials. Ideal for Kubernetes secrets.
 
 ## Usage
 

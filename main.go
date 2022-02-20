@@ -7,12 +7,20 @@ import (
 	"os"
 )
 
+const version = "1.0.1"
+
 func main() {
 	username := flag.StringP("username", "u", "", "username for docker registry")
 	password := flag.StringP("password", "p", "", "password for docker registry")
 	server := flag.StringP("server", "s", "", "docker registry server")
 	base64Output := flag.BoolP("base64", "b", false, "output result base64 encoded")
+	printVersion := flag.BoolP("version", "v", false, "Print the current version and exit")
 	flag.Parse()
+
+	if *printVersion {
+		fmt.Println(version)
+		os.Exit(0)
+	}
 
 	if *username == "" {
 		fmt.Println("username cannot be empty!")

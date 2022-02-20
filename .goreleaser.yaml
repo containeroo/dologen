@@ -1,0 +1,34 @@
+---
+project_name: dologen
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - main: ./main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - arm
+brews:
+  - name: dologen
+    tap:
+      owner: containeroo
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    folder: Formula
+    homepage: https://containeroo.ch
+    description: Simple CLI tool to generate Docker config.json with registry credentials
+    license: GNU General Public License v3.0
+    test: |
+      system "#{bin}/dologen --version"
+    dependencies:
+      - name: go
+        type: optional
+    install: |-
+      bin.install "dologen"

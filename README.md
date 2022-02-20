@@ -11,4 +11,5 @@ A small CLI tool to generate a Docker `config.json` with registry credentials. I
   -p, --password string   password for docker registry
   -s, --server string     docker registry server
   -u, --username string   username for docker registry
+  -v, --version           print version and exit
 ```

@@ -12,7 +12,7 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-const version = "1.2.0"
+const version = "1.2.1"
 
 type registryAuth struct {
 	Username string `json:"username"`

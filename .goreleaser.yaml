@@ -5,30 +5,42 @@ before:
     - go mod tidy
 builds:
   - main: ./main.go
+    binary: dologen
     env:
       - CGO_ENABLED=0
     goos:
       - linux
       - darwin
-      - windows
     goarch:
       - amd64
       - arm64
-      - arm
-brews:
+archives:
+  - formats:
+      - tar.gz
+    files:
+      - completions/*
+      - README*
+      - LICENSE*
+homebrew_casks:
   - name: dologen
-    tap:
+    repository:
       owner: containeroo
       name: homebrew-tap
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
-    folder: Formula
+    directory: Casks
     homepage: https://containeroo.ch
     description: Simple CLI tool to generate Docker config.json with registry credentials
-    license: GNU General Public License v3.0
+    license: GPL-3.0-or-later
+    binaries:
+      - dologen
+    completions:
+      bash: completions/dologen.bash
+      zsh: completions/dologen.zsh
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system "xattr", "-dr", "com.apple.quarantine", "#{staged_path}/dologen"
+          end
     test: |
-      system "#{bin}/dologen --version"
-    dependencies:
-      - name: go
-        type: optional
-    install: |-
-      bin.install "dologen"
+      system "#{binary}/dologen", "--version"

@@ -147,8 +147,38 @@ func TestRunCompletionBash(t *testing.T) {
 	}
 }
 
+func TestRunCompletionSubcommandBash(t *testing.T) {
+	exitCode, stdout, stderr := runForTest(t, "completion", "bash")
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d (stderr: %s)", exitCode, stderr)
+	}
+	if !strings.Contains(stdout, "complete -F") {
+		t.Fatalf("expected bash completion output, got %q", stdout)
+	}
+}
+
+func TestRunCompletionSubcommandRequiresShell(t *testing.T) {
+	exitCode, _, stderr := runForTest(t, "completion")
+	if exitCode != 1 {
+		t.Fatalf("expected exit code 1, got %d", exitCode)
+	}
+	if !strings.Contains(stderr, "usage: dologen completion <bash|zsh>") {
+		t.Fatalf("expected completion usage error, got %q", stderr)
+	}
+}
+
 func TestRunRejectsUnknownCompletionShell(t *testing.T) {
 	exitCode, _, stderr := runForTest(t, "--completion", "fish")
+	if exitCode != 1 {
+		t.Fatalf("expected exit code 1, got %d", exitCode)
+	}
+	if !strings.Contains(stderr, "unsupported shell") {
+		t.Fatalf("expected unsupported shell error, got %q", stderr)
+	}
+}
+
+func TestRunRejectsUnknownCompletionSubcommandShell(t *testing.T) {
+	exitCode, _, stderr := runForTest(t, "completion", "fish")
 	if exitCode != 1 {
 		t.Fatalf("expected exit code 1, got %d", exitCode)
 	}

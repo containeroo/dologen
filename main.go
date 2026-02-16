@@ -12,7 +12,7 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-const version = "1.2.2"
+const version = "1.2.3"
 
 type registryAuth struct {
 	Username string `json:"username"`
@@ -29,6 +29,21 @@ func main() {
 }
 
 func run(programName string, args []string, stdout, stderr io.Writer) int {
+	if len(args) > 0 && args[0] == "completion" {
+		if len(args) != 2 {
+			fmt.Fprintf(stderr, "error: usage: %s completion <bash|zsh>\n", filepath.Base(programName))
+			return 1
+		}
+
+		script, err := completionScript(filepath.Base(programName), args[1])
+		if err != nil {
+			fmt.Fprintf(stderr, "error: %v\n", err)
+			return 1
+		}
+		fmt.Fprint(stdout, script)
+		return 0
+	}
+
 	fs := flag.NewFlagSet(programName, flag.ContinueOnError)
 	fs.SetOutput(stderr)
 
@@ -40,7 +55,8 @@ func run(programName string, args []string, stdout, stderr io.Writer) int {
 	completion := fs.String("completion", "", "print shell completion script: bash|zsh")
 	printVersion := fs.BoolP("version", "v", false, "Print the current version and exit")
 	fs.Usage = func() {
-		fmt.Fprintf(stderr, "Usage: %s [flags]\n\n", filepath.Base(programName))
+		fmt.Fprintf(stderr, "Usage: %s [flags]\n", filepath.Base(programName))
+		fmt.Fprintf(stderr, "       %s completion <bash|zsh>\n\n", filepath.Base(programName))
 		fs.PrintDefaults()
 	}
 
@@ -177,7 +193,20 @@ _%s() {
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="--base64 --completion --help --password --password-file --server --username --version -b -f -h -p -s -u -v"
+  opts="completion --base64 --completion --help --password --password-file --server --username --version -b -f -h -p -s -u -v"
+
+  if [[ ${COMP_CWORD} -eq 1 ]]; then
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+    return 0
+  fi
+
+  if [[ "${COMP_WORDS[1]}" == "completion" ]]; then
+    if [[ ${COMP_CWORD} -eq 2 ]]; then
+      COMPREPLY=( $(compgen -W "bash zsh" -- "${cur}") )
+      return 0
+    fi
+    return 0
+  fi
 
   case "${prev}" in
     --completion)
@@ -198,14 +227,26 @@ complete -F _%s %s
 	case "zsh":
 		return fmt.Sprintf(`#compdef %s
 
-_arguments -s \\
-  '(-u --username)'{-u,--username}'[username for docker registry]:username:' \\
-  '(-p --password)'{-p,--password}'[password for docker registry]:password:' \\
-  '(-f --password-file)'{-f,--password-file}'[password file for docker registry]:password file:_files' \\
-  '(-s --server)'{-s,--server}'[docker registry server]:server:' \\
-  '(-b --base64)'{-b,--base64}'[output result base64 encoded]' \\
-  '--completion[print shell completion script]:shell:(bash zsh)' \\
-  '(-v --version)'{-v,--version}'[Print the current version and exit]' \\
+if (( CURRENT == 2 )) && [[ ${words[2]} != -* ]]; then
+  _values 'command' completion
+  return
+fi
+
+if [[ ${words[2]} == completion ]]; then
+  if (( CURRENT == 3 )); then
+    _values 'shell' bash zsh
+  fi
+  return
+fi
+
+_arguments -s \
+  '(-u --username)'{-u,--username}'[username for docker registry]:username:' \
+  '(-p --password)'{-p,--password}'[password for docker registry]:password:' \
+  '(-f --password-file)'{-f,--password-file}'[password file for docker registry]:password file:_files' \
+  '(-s --server)'{-s,--server}'[docker registry server]:server:' \
+  '(-b --base64)'{-b,--base64}'[output result base64 encoded]' \
+  '--completion[print shell completion script]:shell:(bash zsh)' \
+  '(-v --version)'{-v,--version}'[Print the current version and exit]' \
   '(-h --help)'{-h,--help}'[help for %s]'
 `, binaryName, binaryName), nil
 	default:

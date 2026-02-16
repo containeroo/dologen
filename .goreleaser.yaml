@@ -43,5 +43,3 @@ homebrew_casks:
           if OS.mac?
             system "xattr", "-dr", "com.apple.quarantine", "#{staged_path}/dologen"
           end
-    test: |
-      system "#{binary}/dologen", "--version"

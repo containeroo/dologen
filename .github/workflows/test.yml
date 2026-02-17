@@ -1,19 +1,17 @@
 ---
-name: golangci-lint
+name: test
 
 on:
   pull_request:
     branches:
       - master
-    paths-ignore:
-      - .github/**
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  golangci:
-    name: lint
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,7 +21,9 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
-        with:
-          args: --issues-exit-code=0 --timeout=5m ./...
+      - name: Verify formatting
+        run: test -z "$(gofmt -l $(git ls-files '*.go'))"
+      - name: Run go vet
+        run: go vet ./...
+      - name: Run tests
+        run: go test ./...

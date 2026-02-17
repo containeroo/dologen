@@ -4,6 +4,9 @@ project_name: dologen
 before:
   hooks:
     - go mod tidy
+    - sh -c 'rm -rf completions && mkdir -p completions'
+    - sh -c 'go run . completion bash > completions/dologen.bash'
+    - sh -c 'go run . completion zsh > completions/dologen.zsh'
 builds:
   - main: ./main.go
     binary: dologen
